@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Learn C++</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="text-center mb-4">Learn C++</h1>
+    <div class="mb-3">
+      <label for="exerciseSelector" class="form-label">Choose an Exercise:</label>
+      <select id="exerciseSelector" class="form-select" onchange="loadExercise()">
+        <option value="1">Exercise 1: Print "Hello, World!"</option>
+        <option value="2">Exercise 2: Sum of Two Numbers</option>
+        <option value="3">Exercise 3: Find Maximum of Two Numbers</option>
+        <option value="4">Exercise 4: Factorial of a Number</option>
+        <option value="5">Exercise 5: Check Prime Number</option>
+      </select>
+    </div>
+
+    <div id="exerciseDescription" class="alert alert-info">Select an exercise to see the description.</div>
+
+    <label for="codeEditor" class="form-label">Write Your C++ Code:</label>
+    <textarea id="codeEditor" class="form-control" rows="10" placeholder="// Write your code here"></textarea>
+
+    <div class="d-flex justify-content-between mt-3">
+      <button class="btn btn-primary" onclick="runCode()">Run Code</button>
+      <button class="btn btn-success" onclick="runTests()">Run Autotests</button>
+    </div>
+
+    <div id="output" class="mt-3 alert alert-secondary" style="white-space: pre-wrap;">Output will appear here...</div>
+  </div>
+
+  <script>
+    const exercises = {
+      1: {
+        description: 'Write a program that prints "Hello, World!".',
+        sampleInput: '',
+      },
+      2: {
+        description: 'Write a program to calculate the sum of two numbers. Input: two integers separated by space. Output: their sum.',
+        sampleInput: '2 3',
+      },
+      3: {
+        description: 'Write a program to find the maximum of two numbers. Input: two integers separated by space. Output: the larger number.',
+        sampleInput: '10 20',
+      },
+      4: {
+        description: 'Write a program to calculate the factorial of a number. Input: a single integer. Output: the factorial of the number.',
+        sampleInput: '5',
+      },
+      5: {
+        description: 'Write a program to check if a number is prime. Input: a single integer. Output: "Prime" or "Not Prime".',
+        sampleInput: '7',
+      },
+    };
+
+    async function runCode() {
+      const code = document.getElementById('codeEditor').value;
+      const selectedExercise = document.getElementById('exerciseSelector').value;
+      const input = exercises[selectedExercise].sampleInput;
+      const outputElement = document.getElementById('output');
+
+      const data = {
+        language_id: 54, // C++ (GCC 9.2.0)
+        source_code: code,
+        stdin: input,
+      };
+
+      outputElement.textContent = "Running your code...";
+
+      try {
+        const response = await fetch('https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=false&wait=true', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-RapidAPI-Key': 'ae3f7dd1demsh3266cc2594e893fp140a68jsne1c81d9e01ce', // Replace with your RapidAPI Key
+            'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
+          },
+          body: JSON.stringify(data),
+        });
+
+        const result = await response.json();
+
+        if (result.stderr) {
+          outputElement.textContent = "Error:\n" + result.stderr;
+        } else if (result.compile_output) {
+          outputElement.textContent = "Compile Error:\n" + result.compile_output;
+        } else {
+          outputElement.textContent = "Output:\n" + result.stdout;
+        }
+      } catch (error) {
+        outputElement.textContent = "Error running code: " + error.message;
+      }
+    }
+
+    function runTests() {
+      document.getElementById('output').textContent = "Test runner is not fully implemented yet!";
+    }
+
+    function loadExercise() {
+      const selectedExercise = document.getElementById('exerciseSelector').value;
+      const exercise = exercises[selectedExercise];
+      document.getElementById('exerciseDescription').textContent = exercise.description;
+    }
+
+    loadExercise();
+  </script>
+</body>
+</html>
